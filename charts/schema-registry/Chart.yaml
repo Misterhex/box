@@ -1,0 +1,18 @@
+apiVersion: v2
+name: schema-registry
+description: A Helm chart for deploying Confluent Schema Registry on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "7.6.0"
+home: https://docs.confluent.io/platform/current/schema-registry/index.html
+sources:
+  - https://github.com/confluentinc/schema-registry
+keywords:
+  - confluent
+  - schema-registry
+  - kafka
+  - avro
+  - protobuf
+  - json-schema
+maintainers:
+  - name: platform-engineering

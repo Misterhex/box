@@ -1,0 +1,249 @@
+# -- Number of Schema Registry replicas. Use 2+ for HA.
+replicaCount: 2
+
+image:
+  # -- Container image repository
+  repository: confluentinc/cp-schema-registry
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag (default is Chart appVersion)
+  tag: ""
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+
+# -- Override the chart name
+nameOverride: ""
+# -- Override the full release name
+fullnameOverride: ""
+
+# -- Labels to add to all resources
+commonLabels: {}
+
+# -- Schema compatibility level (BACKWARD, BACKWARD_TRANSITIVE, FORWARD, FORWARD_TRANSITIVE, FULL, FULL_TRANSITIVE, NONE)
+schemaCompatibility: "BACKWARD"
+
+# ---------------------------------------------------------------------------
+# Kafka connection settings
+# ---------------------------------------------------------------------------
+kafka:
+  # -- Kafka bootstrap servers (REQUIRED)
+  bootstrapServers: "PLAINTEXT://kafka:9092"
+
+  # -- Kafka topic used to store schemas
+  schemaRegistryTopic: "_schemas"
+
+  sasl:
+    # -- Enable SASL authentication to Kafka
+    enabled: false
+    # -- Security protocol (SASL_PLAINTEXT, SASL_SSL)
+    securityProtocol: "SASL_SSL"
+    # -- SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
+    mechanism: "PLAIN"
+    # -- Name of an existing secret containing the JAAS config
+    existingSecret: ""
+    # -- Key within the secret that holds the JAAS config
+    secretKey: "sasl-jaas-config"
+
+# ---------------------------------------------------------------------------
+# TLS / SSL
+# ---------------------------------------------------------------------------
+tls:
+  # -- Enable TLS for Schema Registry listeners
+  enabled: false
+  # -- Existing secret containing keystore/truststore JKS files and passwords
+  existingSecret: ""
+
+# ---------------------------------------------------------------------------
+# Service account
+# ---------------------------------------------------------------------------
+serviceAccount:
+  # -- Create a dedicated service account
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- Service account name override
+  name: ""
+  # -- Automount API credentials
+  automount: false
+
+# ---------------------------------------------------------------------------
+# Pod configuration
+# ---------------------------------------------------------------------------
+
+# -- Annotations to add to pods
+podAnnotations: {}
+
+# -- Extra labels to add to pods
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+# -- Priority class name for pod scheduling
+priorityClassName: ""
+
+# -- Termination grace period in seconds
+terminationGracePeriodSeconds: 60
+
+# ---------------------------------------------------------------------------
+# Resource requests & limits
+# ---------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+# ---------------------------------------------------------------------------
+# Health probes
+# ---------------------------------------------------------------------------
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# ---------------------------------------------------------------------------
+# Service
+# ---------------------------------------------------------------------------
+service:
+  # -- Service type (ClusterIP, NodePort, LoadBalancer)
+  type: ClusterIP
+  # -- Schema Registry listener port
+  port: 8081
+  # -- NodePort value (only used when service.type is NodePort)
+  nodePort: ""
+  # -- Annotations to add to the service
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Ingress
+# ---------------------------------------------------------------------------
+ingress:
+  # -- Enable ingress
+  enabled: false
+  # -- Ingress class name
+  ingressClassName: ""
+  # -- Ingress annotations
+  annotations: {}
+  # -- Ingress hosts
+  hosts:
+    - host: schema-registry.local
+      paths:
+        - path: /
+          pathType: Prefix
+  # -- Ingress TLS configuration
+  tls: []
+
+# ---------------------------------------------------------------------------
+# Autoscaling (HPA)
+# ---------------------------------------------------------------------------
+autoscaling:
+  # -- Enable Horizontal Pod Autoscaler
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: ""
+  # -- HPA scaling behavior configuration
+  behavior: {}
+
+# ---------------------------------------------------------------------------
+# Pod Disruption Budget
+# ---------------------------------------------------------------------------
+podDisruptionBudget:
+  # -- Enable PDB
+  enabled: true
+  # -- Minimum available pods during disruption
+  minAvailable: 1
+  # -- Maximum unavailable pods during disruption (mutually exclusive with minAvailable)
+  maxUnavailable: ""
+
+# ---------------------------------------------------------------------------
+# Monitoring
+# ---------------------------------------------------------------------------
+metrics:
+  serviceMonitor:
+    # -- Enable Prometheus ServiceMonitor (requires prometheus-operator CRDs)
+    enabled: false
+    # -- ServiceMonitor namespace (defaults to release namespace)
+    namespace: ""
+    # -- Additional labels for ServiceMonitor discovery
+    labels: {}
+    # -- Metrics scrape path
+    path: /metrics
+    # -- Scrape interval
+    interval: 30s
+    # -- Scrape timeout
+    scrapeTimeout: ""
+
+# ---------------------------------------------------------------------------
+# Schema Registry configuration overrides
+# ---------------------------------------------------------------------------
+# -- Arbitrary key-value pairs written to a ConfigMap and available as env-compatible config.
+# Use the SCHEMA_REGISTRY_ prefix env-var form or schema.registry. property form.
+configOverrides: {}
+
+# ---------------------------------------------------------------------------
+# Extra environment variables, volumes, etc.
+# ---------------------------------------------------------------------------
+
+# -- Additional environment variables for the container
+extraEnv: []
+# -- Additional envFrom sources (ConfigMaps, Secrets)
+extraEnvFrom: []
+# -- Additional volume mounts
+extraVolumeMounts: []
+# -- Additional volumes
+extraVolumes: []
+
+# ---------------------------------------------------------------------------
+# Scheduling
+# ---------------------------------------------------------------------------
+
+# -- Node selector labels
+nodeSelector: {}
+
+# -- Tolerations for pod scheduling
+tolerations: []
+
+# -- Affinity rules. When empty, a default anti-affinity preferring spread across
+# nodes is recommended for production. Example:
+#   affinity:
+#     podAntiAffinity:
+#       preferredDuringSchedulingIgnoredDuringExecution:
+#         - weight: 100
+#           podAffinityTerm:
+#             labelSelector:
+#               matchExpressions:
+#                 - key: app.kubernetes.io/name
+#                   operator: In
+#                   values:
+#                     - schema-registry
+#             topologyKey: kubernetes.io/hostname
+affinity: {}
+
+# -- Topology spread constraints
+topologySpreadConstraints: []

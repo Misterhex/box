@@ -1,0 +1,36 @@
+Confluent Schema Registry has been deployed.
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+{{- if .Values.ingress.enabled }}
+
+Schema Registry is accessible via Ingress:
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else if eq .Values.service.type "NodePort" }}
+
+Access Schema Registry via NodePort:
+  export NODE_PORT=$(kubectl get -n {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "schema-registry.fullname" . }})
+  export NODE_IP=$(kubectl get nodes -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if eq .Values.service.type "LoadBalancer" }}
+
+Access Schema Registry via LoadBalancer:
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+  export SERVICE_IP=$(kubectl get svc -n {{ .Release.Namespace }} {{ include "schema-registry.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else }}
+
+Access Schema Registry via port-forward:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "schema-registry.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  echo http://127.0.0.1:{{ .Values.service.port }}
+{{- end }}
+
+Verify deployment:
+  # List registered subjects
+  curl http{{ if .Values.tls.enabled }}s{{ end }}://{{ include "schema-registry.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.service.port }}/subjects
+
+  # Check compatibility level
+  curl http{{ if .Values.tls.enabled }}s{{ end }}://{{ include "schema-registry.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.service.port }}/config
