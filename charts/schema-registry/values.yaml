@@ -45,6 +45,12 @@ kafka:
     # -- Key within the secret that holds the JAAS config
     secretKey: "sasl-jaas-config"
 
+  tls:
+    # -- Enable mTLS for Kafka connection
+    enabled: false
+    # -- Existing secret containing keystore/truststore JKS files and passwords for Kafka connection
+    existingSecret: ""
+
 # ---------------------------------------------------------------------------
 # TLS / SSL
 # ---------------------------------------------------------------------------

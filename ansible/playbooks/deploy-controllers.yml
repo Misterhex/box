@@ -1,0 +1,7 @@
+---
+- name: Deploy Kafka Controllers Only
+  hosts: kafka_controllers
+  become: yes
+  roles:
+    - kafka-common
+    - kafka-controller

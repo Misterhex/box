@@ -1,0 +1,16 @@
+apiVersion: v2
+name: prometheus
+description: A Helm chart for deploying Prometheus on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "v2.51.0"
+home: https://prometheus.io
+sources:
+  - https://github.com/prometheus/prometheus
+keywords:
+  - prometheus
+  - monitoring
+  - metrics
+  - observability
+maintainers:
+  - name: platform-engineering

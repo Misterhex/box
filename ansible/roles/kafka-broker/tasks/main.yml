@@ -1,0 +1,39 @@
+---
+- name: Create broker log directory
+  ansible.builtin.file:
+    path: "{{ kafka_log_dirs }}"
+    state: directory
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: '0755'
+  become: yes
+
+- name: Deploy broker server.properties
+  ansible.builtin.template:
+    src: server.properties.j2
+    dest: "{{ kafka_config_dir }}/server.properties"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: '0640'
+  become: yes
+  notify: restart kafka
+
+- name: Check if cluster is formatted
+  ansible.builtin.stat:
+    path: "{{ kafka_log_dirs }}/meta.properties"
+  register: formatted_check
+  become: yes
+
+- name: Format storage with cluster ID
+  ansible.builtin.command:
+    cmd: "{{ kafka_home }}/bin/kafka-storage.sh format -t {{ kafka_cluster_id }} -c {{ kafka_config_dir }}/server.properties"
+  become: yes
+  become_user: "{{ kafka_user }}"
+  when: not formatted_check.stat.exists
+
+- name: Enable and start Kafka broker
+  ansible.builtin.systemd:
+    name: kafka
+    enabled: yes
+    state: started
+  become: yes

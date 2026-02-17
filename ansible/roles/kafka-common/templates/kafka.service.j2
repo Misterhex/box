@@ -1,0 +1,19 @@
+[Unit]
+Description=Apache Kafka (KRaft mode)
+Documentation=https://kafka.apache.org/documentation/
+After=network.target
+
+[Service]
+Type=simple
+User={{ kafka_user }}
+Group={{ kafka_group }}
+Environment="KAFKA_HEAP_OPTS={{ kafka_heap_opts }}"
+Environment="KAFKA_JMX_OPTS=-javaagent:{{ jmx_exporter_jar }}={{ jmx_exporter_port }}:{{ jmx_exporter_config }}"
+Environment="LOG_DIR={{ kafka_data_dir }}/logs"
+ExecStart={{ kafka_home }}/bin/kafka-server-start.sh {{ kafka_config_dir }}/server.properties
+Restart=on-failure
+RestartSec=10
+LimitNOFILE=100000
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+---
+# Controller-specific variables
+
+kafka_controller_log_dirs: "{{ kafka_data_dir }}/controller-logs"
+
+# Controller quorum voters
+kafka_controller_quorum_voters: "1@controller-1:9094,2@controller-2:9094,3@controller-3:9094"
+
+# Controller listeners
+kafka_controller_listeners: "CONTROLLER://:9094"
+
+# JVM options for controllers
+kafka_heap_opts: "-Xms1G -Xmx1G"

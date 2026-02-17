@@ -1,0 +1,108 @@
+---
+- name: Install Java
+  ansible.builtin.apt:
+    name: "{{ java_packages }}"
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Create Kafka group
+  ansible.builtin.group:
+    name: "{{ kafka_group }}"
+    state: present
+  become: yes
+
+- name: Create Kafka user
+  ansible.builtin.user:
+    name: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    shell: /bin/bash
+    createhome: yes
+    system: yes
+  become: yes
+
+- name: Create installation directory
+  ansible.builtin.file:
+    path: "{{ kafka_install_dir }}"
+    state: directory
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: '0755'
+  become: yes
+
+- name: Download Kafka
+  ansible.builtin.get_url:
+    url: "{{ kafka_download_url }}"
+    dest: "/tmp/kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz"
+    mode: '0644'
+  become: yes
+
+- name: Extract Kafka
+  ansible.builtin.unarchive:
+    src: "/tmp/kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz"
+    dest: "{{ kafka_install_dir }}"
+    remote_src: yes
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    creates: "{{ kafka_home }}"
+  become: yes
+
+- name: Create SSL directory
+  ansible.builtin.file:
+    path: "{{ kafka_ssl_dir }}"
+    state: directory
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: '0700'
+  become: yes
+
+- name: Create data directory
+  ansible.builtin.file:
+    path: "{{ kafka_data_dir }}"
+    state: directory
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: '0755'
+  become: yes
+
+- name: Check if SSL keystore exists
+  ansible.builtin.stat:
+    path: "{{ kafka_ssl_dir }}/kafka.keystore.jks"
+  register: keystore_stat
+  become: yes
+
+- name: Warning if SSL certificates not found
+  ansible.builtin.debug:
+    msg: "WARNING: SSL keystore not found at {{ kafka_ssl_dir }}/kafka.keystore.jks - please provision certificates before starting Kafka"
+  when: not keystore_stat.stat.exists
+
+- name: Download JMX Exporter
+  ansible.builtin.get_url:
+    url: "{{ jmx_exporter_url }}"
+    dest: "{{ jmx_exporter_jar }}"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: '0644'
+  become: yes
+
+- name: Deploy JMX Exporter configuration
+  ansible.builtin.template:
+    src: jmx-exporter-config.yml.j2
+    dest: "{{ jmx_exporter_config }}"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: '0644'
+  become: yes
+  notify: restart kafka
+
+- name: Deploy Kafka systemd service
+  ansible.builtin.template:
+    src: kafka.service.j2
+    dest: /etc/systemd/system/kafka.service
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  notify:
+    - reload systemd
+    - restart kafka

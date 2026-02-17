@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "schema-registry.name" -}}
+{{- define "prometheus.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -9,7 +9,7 @@ Expand the name of the chart.
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "schema-registry.fullname" -}}
+{{- define "prometheus.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -25,71 +25,37 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "schema-registry.chart" -}}
+{{- define "prometheus.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "schema-registry.labels" -}}
-helm.sh/chart: {{ include "schema-registry.chart" . }}
-{{ include "schema-registry.selectorLabels" . }}
+{{- define "prometheus.labels" -}}
+helm.sh/chart: {{ include "prometheus.chart" . }}
+{{ include "prometheus.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- with .Values.commonLabels }}
-{{ toYaml . }}
-{{- end }}
 {{- end }}
 
 {{/*
 Selector labels
 */}}
-{{- define "schema-registry.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "schema-registry.name" . }}
+{{- define "prometheus.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "prometheus.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "schema-registry.serviceAccountName" -}}
+{{- define "prometheus.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "schema-registry.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "prometheus.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
-{{- end }}
-
-{{/*
-Schema Registry listener URL
-*/}}
-{{- define "schema-registry.listenerUrl" -}}
-{{- if .Values.tls.enabled -}}
-https://0.0.0.0:{{ .Values.service.port }}
-{{- else -}}
-http://0.0.0.0:{{ .Values.service.port }}
-{{- end -}}
-{{- end }}
-
-{{/*
-Kafka bootstrap servers
-*/}}
-{{- define "schema-registry.kafkaBootstrapServers" -}}
-{{- .Values.kafka.bootstrapServers }}
-{{- end }}
-
-{{/*
-Kafka security protocol
-*/}}
-{{- define "schema-registry.kafkaSecurityProtocol" -}}
-{{- if .Values.kafka.tls.enabled -}}
-SSL
-{{- else if .Values.kafka.sasl.enabled -}}
-{{- .Values.kafka.sasl.securityProtocol }}
-{{- else -}}
-PLAINTEXT
-{{- end -}}
 {{- end }}

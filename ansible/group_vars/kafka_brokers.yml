@@ -1,0 +1,14 @@
+---
+# Broker-specific variables
+
+kafka_log_dirs: "{{ kafka_data_dir }}/broker-logs"
+
+# Controller quorum voters (controllers only)
+kafka_controller_quorum_voters: "1@controller-1:9094,2@controller-2:9094,3@controller-3:9094"
+
+# Broker listeners
+kafka_broker_listeners: "BROKER://:9092,CLIENT://:9093"
+kafka_advertised_listeners: "BROKER://{{ ansible_hostname }}:9092,CLIENT://{{ ansible_hostname }}:9093"
+
+# JVM options for brokers
+kafka_heap_opts: "-Xms2G -Xmx2G"

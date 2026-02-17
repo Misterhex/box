@@ -1,0 +1,145 @@
+# -- Number of Kafka UI replicas
+replicaCount: 1
+
+image:
+  # -- Container image repository
+  repository: provectuslabs/kafka-ui
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag (default is "latest")
+  tag: "latest"
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+
+# -- Override the chart name
+nameOverride: ""
+# -- Override the full release name
+fullnameOverride: ""
+
+# ---------------------------------------------------------------------------
+# Kafka connection settings
+# ---------------------------------------------------------------------------
+kafka:
+  # -- List of Kafka clusters to connect to
+  clusters:
+    - name: kafka-mtls
+      bootstrapServers: "kafka-broker-1:9093,kafka-broker-2:9093,kafka-broker-3:9093"
+      schemaRegistry: "http://schema-registry:8081"
+
+# ---------------------------------------------------------------------------
+# TLS / SSL for Kafka connection
+# ---------------------------------------------------------------------------
+tls:
+  # -- Enable TLS for Kafka connection
+  enabled: false
+  # -- Existing secret containing keystore/truststore JKS files and passwords
+  existingSecret: ""
+
+# ---------------------------------------------------------------------------
+# Service account
+# ---------------------------------------------------------------------------
+serviceAccount:
+  # -- Create a dedicated service account
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- Service account name override
+  name: ""
+  # -- Automount API credentials
+  automount: false
+
+# ---------------------------------------------------------------------------
+# Pod configuration
+# ---------------------------------------------------------------------------
+
+# -- Annotations to add to pods
+podAnnotations: {}
+
+# -- Extra labels to add to pods
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+# ---------------------------------------------------------------------------
+# Service
+# ---------------------------------------------------------------------------
+service:
+  # -- Service type (ClusterIP, NodePort, LoadBalancer)
+  type: ClusterIP
+  # -- Kafka UI port
+  port: 8080
+  # -- Annotations to add to the service
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Ingress
+# ---------------------------------------------------------------------------
+ingress:
+  # -- Enable ingress
+  enabled: false
+  # -- Ingress class name
+  ingressClassName: ""
+  # -- Ingress annotations
+  annotations: {}
+  # -- Ingress hosts
+  hosts:
+    - host: kafka-ui.local
+      paths:
+        - path: /
+          pathType: Prefix
+  # -- Ingress TLS configuration
+  tls: []
+
+# ---------------------------------------------------------------------------
+# Resource requests & limits
+# ---------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# ---------------------------------------------------------------------------
+# Health probes
+# ---------------------------------------------------------------------------
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# ---------------------------------------------------------------------------
+# Scheduling
+# ---------------------------------------------------------------------------
+
+# -- Node selector labels
+nodeSelector: {}
+
+# -- Tolerations for pod scheduling
+tolerations: []
+
+# -- Affinity rules
+affinity: {}

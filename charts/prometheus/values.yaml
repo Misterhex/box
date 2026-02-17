@@ -1,0 +1,175 @@
+# -- Number of Prometheus replicas
+replicaCount: 1
+
+image:
+  # -- Container image repository
+  repository: prom/prometheus
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag (default is Chart appVersion)
+  tag: "v2.51.0"
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+
+# -- Override the chart name
+nameOverride: ""
+# -- Override the full release name
+fullnameOverride: ""
+
+# ---------------------------------------------------------------------------
+# Service account
+# ---------------------------------------------------------------------------
+serviceAccount:
+  # -- Create a dedicated service account
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- Service account name override
+  name: ""
+  # -- Automount API credentials
+  automount: true
+
+# ---------------------------------------------------------------------------
+# RBAC
+# ---------------------------------------------------------------------------
+rbac:
+  # -- Create ClusterRole and ClusterRoleBinding for service discovery
+  create: true
+
+# ---------------------------------------------------------------------------
+# Pod configuration
+# ---------------------------------------------------------------------------
+
+# -- Annotations to add to pods
+podAnnotations: {}
+
+# -- Extra labels to add to pods
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# ---------------------------------------------------------------------------
+# Service
+# ---------------------------------------------------------------------------
+service:
+  # -- Service type (ClusterIP, NodePort, LoadBalancer)
+  type: ClusterIP
+  # -- Prometheus port
+  port: 9090
+  # -- Annotations to add to the service
+  annotations: {}
+
+# ---------------------------------------------------------------------------
+# Resource requests & limits
+# ---------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 2Gi
+
+# ---------------------------------------------------------------------------
+# Storage
+# ---------------------------------------------------------------------------
+storage:
+  # -- Enable persistent storage for Prometheus data
+  enabled: true
+  # -- Storage size
+  size: 50Gi
+  # -- Storage class name (leave empty for default)
+  storageClassName: ""
+  # -- Access modes
+  accessModes:
+    - ReadWriteOnce
+
+# ---------------------------------------------------------------------------
+# Prometheus configuration
+# ---------------------------------------------------------------------------
+
+# -- Data retention period
+retention: 15d
+
+# -- Scrape interval for all jobs (can be overridden per job)
+scrapeInterval: 15s
+
+# -- Scrape timeout for all jobs
+scrapeTimeout: 10s
+
+# -- Evaluation interval for rules
+evaluationInterval: 15s
+
+# ---------------------------------------------------------------------------
+# Scrape configurations
+# ---------------------------------------------------------------------------
+scrapeConfigs:
+  # Kafka brokers
+  kafkaBrokers:
+    enabled: true
+    targets:
+      - "broker-1:7071"
+      - "broker-2:7071"
+      - "broker-3:7071"
+    metricsPath: /metrics
+    scrapeInterval: 15s
+
+  # Kafka controllers
+  kafkaControllers:
+    enabled: true
+    targets:
+      - "controller-1:7071"
+      - "controller-2:7071"
+      - "controller-3:7071"
+    metricsPath: /metrics
+    scrapeInterval: 15s
+
+  # Schema Registry
+  schemaRegistry:
+    enabled: true
+    targets: []
+    metricsPath: /metrics
+    scrapeInterval: 30s
+
+# ---------------------------------------------------------------------------
+# Health probes
+# ---------------------------------------------------------------------------
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# ---------------------------------------------------------------------------
+# Scheduling
+# ---------------------------------------------------------------------------
+
+# -- Node selector labels
+nodeSelector: {}
+
+# -- Tolerations for pod scheduling
+tolerations: []
+
+# -- Affinity rules
+affinity: {}

@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "prometheus.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "prometheus.labels" . | nindent 4 }}
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ .Values.scrapeInterval }}
+      scrape_timeout: {{ .Values.scrapeTimeout }}
+      evaluation_interval: {{ .Values.evaluationInterval }}
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      {{- if .Values.scrapeConfigs.kafkaBrokers.enabled }}
+      - job_name: 'kafka-brokers'
+        metrics_path: {{ .Values.scrapeConfigs.kafkaBrokers.metricsPath }}
+        scrape_interval: {{ .Values.scrapeConfigs.kafkaBrokers.scrapeInterval }}
+        static_configs:
+          - targets:
+            {{- range .Values.scrapeConfigs.kafkaBrokers.targets }}
+            - {{ . | quote }}
+            {{- end }}
+            labels:
+              component: kafka-broker
+      {{- end }}
+
+      {{- if .Values.scrapeConfigs.kafkaControllers.enabled }}
+      - job_name: 'kafka-controllers'
+        metrics_path: {{ .Values.scrapeConfigs.kafkaControllers.metricsPath }}
+        scrape_interval: {{ .Values.scrapeConfigs.kafkaControllers.scrapeInterval }}
+        static_configs:
+          - targets:
+            {{- range .Values.scrapeConfigs.kafkaControllers.targets }}
+            - {{ . | quote }}
+            {{- end }}
+            labels:
+              component: kafka-controller
+      {{- end }}
+
+      {{- if and .Values.scrapeConfigs.schemaRegistry.enabled (gt (len .Values.scrapeConfigs.schemaRegistry.targets) 0) }}
+      - job_name: 'schema-registry'
+        metrics_path: {{ .Values.scrapeConfigs.schemaRegistry.metricsPath }}
+        scrape_interval: {{ .Values.scrapeConfigs.schemaRegistry.scrapeInterval }}
+        static_configs:
+          - targets:
+            {{- range .Values.scrapeConfigs.schemaRegistry.targets }}
+            - {{ . | quote }}
+            {{- end }}
+            labels:
+              component: schema-registry
+      {{- end }}

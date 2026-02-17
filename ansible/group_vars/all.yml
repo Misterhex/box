@@ -1,0 +1,34 @@
+---
+# Common variables for all Kafka nodes
+
+# Kafka installation
+kafka_version: "3.8.1"
+kafka_scala_version: "2.13"
+kafka_download_url: "https://archive.apache.org/dist/kafka/{{ kafka_version }}/kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz"
+kafka_install_dir: "/opt/kafka"
+kafka_home: "{{ kafka_install_dir }}/kafka_{{ kafka_scala_version }}-{{ kafka_version }}"
+
+# User and directories
+kafka_user: "kafka"
+kafka_group: "kafka"
+kafka_config_dir: "{{ kafka_home }}/config"
+kafka_ssl_dir: "/etc/kafka/ssl"
+kafka_data_dir: "/var/lib/kafka"
+
+# SSL/TLS
+kafka_keystore_password: "changeit"
+kafka_truststore_password: "changeit"
+
+# JMX Exporter
+jmx_exporter_version: "1.0.1"
+jmx_exporter_port: 7071
+jmx_exporter_jar: "{{ kafka_install_dir }}/jmx_prometheus_javaagent-{{ jmx_exporter_version }}.jar"
+jmx_exporter_config: "{{ kafka_config_dir }}/jmx-exporter-config.yml"
+jmx_exporter_url: "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ jmx_exporter_version }}/jmx_prometheus_javaagent-{{ jmx_exporter_version }}.jar"
+
+# Java
+java_packages:
+  - openjdk-17-jdk
+
+# Kafka cluster
+kafka_cluster_id: "MkU3OEVBNTcwNTJENDM2Qk"  # Generated with kafka-storage.sh random-uuid

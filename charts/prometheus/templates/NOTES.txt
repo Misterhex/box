@@ -1,0 +1,29 @@
+1. Get the Prometheus URL by running these commands:
+{{- if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "prometheus.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "prometheus.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "prometheus.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "{{ include "prometheus.selectorLabels" . | replace "\n" "," }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:9090 to use Prometheus"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 9090:$CONTAINER_PORT
+{{- end }}
+
+2. Verify that targets are being scraped:
+   - Go to http://localhost:9090/targets to see all configured scrape targets
+   - Check that Kafka brokers, controllers, and Schema Registry are UP
+
+3. Storage configuration:
+{{- if .Values.storage.enabled }}
+   - Persistent storage is enabled with {{ .Values.storage.size }} of storage
+   - Data retention is set to {{ .Values.retention }}
+{{- else }}
+   - WARNING: Persistent storage is disabled. Data will be lost on pod restart.
+   - Enable storage in values.yaml for production use
+{{- end }}

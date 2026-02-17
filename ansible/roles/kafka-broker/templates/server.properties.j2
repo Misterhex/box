@@ -1,0 +1,43 @@
+############################# Server Basics #############################
+
+node.id={{ kafka_node_id }}
+process.roles=broker
+controller.quorum.voters={{ kafka_controller_quorum_voters }}
+
+############################# Socket Server Settings #############################
+
+listeners=BROKER://:9092,CLIENT://:9093
+advertised.listeners=BROKER://{{ ansible_hostname }}:9092,CLIENT://{{ ansible_hostname }}:9093
+listener.security.protocol.map=BROKER:SSL,CLIENT:SSL,CONTROLLER:SSL
+inter.broker.listener.name=BROKER
+
+############################# Log Basics #############################
+
+log.dirs={{ kafka_log_dirs }}
+
+############################# SSL/TLS Settings #############################
+
+ssl.keystore.location={{ kafka_ssl_dir }}/kafka.keystore.jks
+ssl.keystore.password={{ kafka_keystore_password }}
+ssl.truststore.location={{ kafka_ssl_dir }}/kafka.truststore.jks
+ssl.truststore.password={{ kafka_truststore_password }}
+ssl.client.auth=required
+ssl.principal.mapping.rules=RULE:^CN=(.*?),.*$/$1/,DEFAULT
+
+############################# Authorization Settings #############################
+
+authorizer.class.name=org.apache.kafka.metadata.authorizer.StandardAuthorizer
+super.users=User:kafka-broker
+allow.everyone.if.no.acl.found=false
+
+############################# Internal Topic Settings #############################
+
+offsets.topic.replication.factor=3
+transaction.state.log.replication.factor=3
+transaction.state.log.min.isr=2
+
+############################# Log Retention Policy #############################
+
+log.retention.hours=168
+log.segment.bytes=1073741824
+log.retention.check.interval.ms=300000
