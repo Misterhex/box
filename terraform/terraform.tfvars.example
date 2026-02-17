@@ -1,0 +1,22 @@
+# DigitalOcean API token (or set TF_VAR_do_token env var)
+do_token = "dop_v1_xxxxxxxxxxxxxxxxxxxx"
+
+# SSH key fingerprints (from: doctl compute ssh-key list)
+ssh_key_fingerprints = ["ab:cd:ef:12:34:56:78:90:ab:cd:ef:12:34:56:78:90"]
+
+# Region (sgp1 = Singapore, nyc1 = New York, ams3 = Amsterdam, etc.)
+region = "sgp1"
+
+# Droplet sizes
+controller_size = "s-1vcpu-2gb"  # $12/mo each
+broker_size     = "s-2vcpu-4gb"  # $24/mo each
+
+# Kubernetes
+k8s_node_size  = "s-2vcpu-4gb"   # $24/mo each
+k8s_node_count = 2
+
+# Optional: base domain for ingress (point *.example.com to LB IP)
+# domain = "kafka.example.com"
+
+# Optional: restrict SSH access
+# admin_cidrs = ["YOUR_IP/32"]
