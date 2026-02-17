@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kafka-ui.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka-ui.labels" . | nindent 4 }}
+data:
+  config.yml: |
+    kafka:
+      clusters:
+      {{- range .Values.kafka.clusters }}
+        - name: {{ .name }}
+          bootstrapServers: {{ .bootstrapServers }}
+          {{- if .schemaRegistry }}
+          schemaRegistry: {{ .schemaRegistry }}
+          {{- end }}
+          {{- if $.Values.tls.enabled }}
+          properties:
+            security.protocol: SSL
+            ssl.keystore.location: /etc/kafka-ui/tls/keystore.jks
+            ssl.keystore.password: ${SSL_KEYSTORE_PASSWORD}
+            ssl.truststore.location: /etc/kafka-ui/tls/truststore.jks
+            ssl.truststore.password: ${SSL_TRUSTSTORE_PASSWORD}
+          {{- end }}
+      {{- end }}

@@ -64,9 +64,11 @@ spec:
               value: {{ .Values.kafka.schemaRegistryTopic | quote }}
             - name: SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL
               value: {{ .Values.schemaCompatibility | quote }}
-            {{- if .Values.kafka.sasl.enabled }}
+            {{- if or .Values.kafka.sasl.enabled .Values.kafka.tls.enabled }}
             - name: SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL
-              value: {{ .Values.kafka.sasl.securityProtocol | quote }}
+              value: {{ include "schema-registry.kafkaSecurityProtocol" . | quote }}
+            {{- end }}
+            {{- if .Values.kafka.sasl.enabled }}
             - name: SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM
               value: {{ .Values.kafka.sasl.mechanism | quote }}
             - name: SCHEMA_REGISTRY_KAFKASTORE_SASL_JAAS_CONFIG
@@ -74,6 +76,22 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.kafka.sasl.existingSecret | default (printf "%s-kafka-sasl" (include "schema-registry.fullname" .)) }}
                   key: {{ .Values.kafka.sasl.secretKey | default "sasl-jaas-config" }}
+            {{- end }}
+            {{- if .Values.kafka.tls.enabled }}
+            - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_LOCATION
+              value: /etc/schema-registry/kafka-tls/keystore.jks
+            - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.kafka.tls.existingSecret | default (printf "%s-kafka-tls" (include "schema-registry.fullname" .)) }}
+                  key: keystore-password
+            - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_LOCATION
+              value: /etc/schema-registry/kafka-tls/truststore.jks
+            - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.kafka.tls.existingSecret | default (printf "%s-kafka-tls" (include "schema-registry.fullname" .)) }}
+                  key: truststore-password
             {{- end }}
             {{- if .Values.tls.enabled }}
             - name: SCHEMA_REGISTRY_SSL_KEYSTORE_LOCATION
@@ -136,6 +154,11 @@ spec:
               mountPath: /etc/schema-registry/tls
               readOnly: true
             {{- end }}
+            {{- if .Values.kafka.tls.enabled }}
+            - name: kafka-tls
+              mountPath: /etc/schema-registry/kafka-tls
+              readOnly: true
+            {{- end }}
             {{- with .Values.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -147,6 +170,11 @@ spec:
         - name: tls
           secret:
             secretName: {{ .Values.tls.existingSecret | default (printf "%s-tls" (include "schema-registry.fullname" .)) }}
+        {{- end }}
+        {{- if .Values.kafka.tls.enabled }}
+        - name: kafka-tls
+          secret:
+            secretName: {{ .Values.kafka.tls.existingSecret | default (printf "%s-kafka-tls" (include "schema-registry.fullname" .)) }}
         {{- end }}
         {{- with .Values.extraVolumes }}
         {{- toYaml . | nindent 8 }}

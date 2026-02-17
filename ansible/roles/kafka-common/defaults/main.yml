@@ -1,0 +1,3 @@
+---
+# Default variables for kafka-common role
+# These can be overridden in group_vars or inventory

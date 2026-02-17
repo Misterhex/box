@@ -1,0 +1,14 @@
+---
+- name: Deploy Kafka Controllers
+  hosts: kafka_controllers
+  become: yes
+  roles:
+    - kafka-common
+    - kafka-controller
+
+- name: Deploy Kafka Brokers
+  hosts: kafka_brokers
+  become: yes
+  roles:
+    - kafka-common
+    - kafka-broker

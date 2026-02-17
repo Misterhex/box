@@ -1,0 +1,3 @@
+---
+# Default variables for kafka-broker role
+# These can be overridden in group_vars or inventory

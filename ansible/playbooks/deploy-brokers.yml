@@ -1,0 +1,7 @@
+---
+- name: Deploy Kafka Brokers Only
+  hosts: kafka_brokers
+  become: yes
+  roles:
+    - kafka-common
+    - kafka-broker

@@ -1,0 +1,16 @@
+apiVersion: v2
+name: kafka-ui
+description: A Helm chart for deploying Kafka UI on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "latest"
+home: https://github.com/provectus/kafka-ui
+sources:
+  - https://github.com/provectus/kafka-ui
+keywords:
+  - kafka
+  - kafka-ui
+  - monitoring
+  - management
+maintainers:
+  - name: platform-engineering

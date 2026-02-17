@@ -1,0 +1,24 @@
+############################# Server Basics #############################
+
+node.id={{ kafka_node_id }}
+process.roles=controller
+controller.quorum.voters={{ kafka_controller_quorum_voters }}
+
+############################# Socket Server Settings #############################
+
+listeners=CONTROLLER://:9094
+controller.listener.names=CONTROLLER
+listener.security.protocol.map=CONTROLLER:SSL
+
+############################# Log Basics #############################
+
+log.dirs={{ kafka_controller_log_dirs }}
+
+############################# SSL/TLS Settings #############################
+
+ssl.keystore.location={{ kafka_ssl_dir }}/kafka.keystore.jks
+ssl.keystore.password={{ kafka_keystore_password }}
+ssl.truststore.location={{ kafka_ssl_dir }}/kafka.truststore.jks
+ssl.truststore.password={{ kafka_truststore_password }}
+ssl.client.auth=required
+ssl.principal.mapping.rules=RULE:^CN=(.*?),.*$/$1/,DEFAULT
